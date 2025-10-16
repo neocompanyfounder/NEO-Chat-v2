@@ -8,10 +8,10 @@
 
 ## Task Summary
 
-**Total Tasks**: 85  
+**Total Tasks**: 116  
 **User Stories**: 6 (P1-P6)  
 **Parallel Opportunities**: 42 tasks marked [P]  
-**MVP Scope**: User Story 1 only (18 tasks)
+**MVP Scope**: User Story 1 only (23 tasks including T039a)
 
 ---
 
@@ -22,7 +22,7 @@
 1. **MVP First** (User Story 1 - P1): Basic WhatsApp text conversation with knowledge base
    - Validates entire architecture end-to-end
    - Delivers immediate value
-   - ~18 tasks, estimated 2-3 weeks
+   - ~18 tasks
 
 2. **Incremental Features** (User Stories 2-6): Add capabilities one at a time
    - Each story is independently testable
@@ -149,6 +149,7 @@ Phase 1 (Setup) → Phase 2 (Foundational) → Phase 3 (US1) → Phase 4 (US2) �
 - [ ] T037 [P] [US1] Create src/agents/response_agent.py for LLM response generation
 - [ ] T038 [P] [US1] Create src/agents/tool_agent.py for knowledge base operations
 - [ ] T039 [US1] Create src/agents/crew_manager.py for sequential agent orchestration
+- [ ] T039a [US1] Implement structured output schemas in response_agent.py for custom functions (FR-009)
 
 ### API Routes
 
@@ -170,6 +171,8 @@ Phase 1 (Setup) → Phase 2 (Foundational) → Phase 3 (US1) → Phase 4 (US2) �
 **Goal**: Enable users to upload documents and images, extract text, and store in knowledge base
 
 **Independent Test**: Upload PDF via WhatsApp → Ask question about content → Verify AI responds with extracted information
+
+**Note**: Tasks in this phase extend components created in US1 (whatsapp_service.py, webhook.py, tool_agent.py)
 
 ### Models & Services
 
@@ -205,6 +208,8 @@ Phase 1 (Setup) → Phase 2 (Foundational) → Phase 3 (US1) → Phase 4 (US2) �
 
 **Independent Test**: Send URL via WhatsApp → Wait for crawl completion → Ask question → Verify AI responds with crawled content
 
+**Note**: Tasks in this phase extend components created in US1 (webhook.py, tool_agent.py)
+
 ### Models & Services
 
 - [ ] T064 [P] [US3] Create src/models/crawl_job.py with CrawlJob model (status, page count)
@@ -233,6 +238,8 @@ Phase 1 (Setup) → Phase 2 (Foundational) → Phase 3 (US1) → Phase 4 (US2) �
 **Goal**: Enable users to send voice messages with transcription and AI processing
 
 **Independent Test**: Send voice message → Receive text response → Verify transcription accuracy
+
+**Note**: Tasks in this phase extend webhook.py created in US1
 
 ### Services
 
@@ -335,10 +342,10 @@ Phase 1 (Setup) → Phase 2 (Foundational) → Phase 3 (US1) → Phase 4 (US2) �
 Execute in order:
 1. Phase 1: Setup (T001-T012)
 2. Phase 2: Foundational (T013-T024)
-3. Phase 3: US1 (T025-T046)
+3. Phase 3: US1 (T025-T046, including T039a)
 4. Phase 9: Essential polish (T100-T104, T107)
 
-**Estimated**: 18 core tasks + 8 polish tasks = 26 tasks for MVP
+**Estimated**: 23 core tasks + 8 polish tasks = 31 tasks for MVP
 
 ### For Full Feature Set
 
