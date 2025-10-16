@@ -31,7 +31,44 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+**Reference**: `.specify/memory/constitution.md`
+
+### Principle I: Docker Build from Source ✓ / ⚠
+
+- [ ] All Docker deployments clone from GitHub and build from source
+- [ ] No pre-built images from registries
+- [ ] Build process documented with commit SHA tracking
+
+### Principle II: MCP Query First ✓ / ⚠
+
+- [ ] MCP queries executed before planning phase
+- [ ] Available sources discovered via `mcp0_get_available_sources`
+- [ ] Query results documented in `research.md`
+- [ ] Technical patterns and architecture decisions informed by MCP
+
+### Principle III: Test-First Development ✓ / ⚠ / N/A
+
+- [ ] Tests requested in feature specification (if yes, proceed; if no, mark N/A)
+- [ ] Test strategy defined before implementation
+- [ ] Red-Green-Refactor cycle planned
+
+### Principle IV: Integration Testing ✓ / ⚠ / N/A
+
+- [ ] Integration points identified
+- [ ] Contract tests planned for service boundaries
+- [ ] External API integration tests defined (if applicable)
+
+### Principle V: Observability & Logging ✓ / ⚠
+
+- [ ] Logging strategy defined
+- [ ] Error handling approach documented
+- [ ] Performance metrics identified
+
+### Principle VI: Simplicity & YAGNI ✓ / ⚠
+
+- [ ] Solution starts with simplest approach
+- [ ] Complexity justified in Complexity Tracking section (if any)
+- [ ] No premature optimization or abstraction
 
 ## Project Structure
 
