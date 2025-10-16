@@ -157,16 +157,30 @@ A user can reset their entire knowledge base, clearing all uploaded files, crawl
 #### WhatsApp Integration
 
 - **FR-001**: System MUST connect to a personal WhatsApp number via the Evolution API without requiring Meta Business Suite management
+- **FR-001a**: System MUST use Evolution API v2 or later with webhook-based message reception
+- **FR-001b**: System MUST authenticate to Evolution API using API key stored in secure environment variables
+- **FR-001c**: System MUST normalize WhatsApp phone numbers to E.164 international format (e.g., +1234567890)
 - **FR-002**: System MUST receive text messages, voice messages, images, and files sent to the WhatsApp number
+- **FR-002a**: System MUST support maximum file size of 16MB per WhatsApp media limits
+- **FR-002b**: System MUST process messages in FIFO order per user to maintain conversation context
 - **FR-003**: System MUST send text responses back to users via WhatsApp
+- **FR-003a**: System MUST implement rate limiting of 60 messages per minute per user to comply with WhatsApp policies
 - **FR-004**: System MUST support WhatsApp List Messages for menus with up to 10 options
+- **FR-004a**: System MUST format List Messages with title (max 60 chars), description (max 1024 chars), and button text (max 20 chars)
 - **FR-005**: System MUST support WhatsApp Reply Buttons for up to 3 quick choices
+- **FR-005a**: System MUST format Reply Buttons with button text (max 20 chars each)
 - **FR-006**: System MUST identify each user by their unique WhatsApp phone number (sender ID)
 
 #### AI Engine
 
 - **FR-007**: System MUST use CrewAI framework for multi-agent orchestration and task automation
+- **FR-007a**: System MUST configure CrewAI agents with roles (retrieval agent, response agent, tool agent) and sequential collaboration pattern
+- **FR-007b**: System MUST provide CrewAI agents with tools for vector search, file processing, and web crawling
 - **FR-008**: System MUST integrate with Google Gemini Flash 2.5 model for LLM inference
+- **FR-008a**: System MUST authenticate to Google Gemini API using API key stored in secure environment variables
+- **FR-008b**: System MUST use Gemini API endpoint v1/models/gemini-2.0-flash-exp or latest stable version
+- **FR-008c**: System MUST configure Gemini with maximum context window of 32,768 tokens
+- **FR-008d**: System MUST implement rate limiting and quota management for Gemini API (60 requests per minute)
 - **FR-009**: System MUST support custom functions and structured outputs in AI responses
 - **FR-010**: System MUST generate responses within 10 seconds for text queries under normal load
 - **FR-011**: System MUST handle concurrent requests from multiple users without blocking
@@ -175,10 +189,25 @@ A user can reset their entire knowledge base, clearing all uploaded files, crawl
 
 - **FR-012**: System MUST maintain a separate knowledge base for each user identified by WhatsApp phone number
 - **FR-013**: System MUST ingest uploaded files (PDF, TXT, DOCX, XLSX, PPTX, JPG, PNG, WEBP) and extract text content
+- **FR-013a**: System MUST use appropriate text extraction libraries (PyPDF2 for PDF, python-docx for DOCX, openpyxl for XLSX, python-pptx for PPTX)
+- **FR-013b**: System MUST use Google Cloud Vision API for OCR on images (JPG, PNG, WEBP)
+- **FR-013c**: System MUST reject files exceeding 16MB and notify users of the size limit
 - **FR-014**: System MUST chunk extracted text into semantically meaningful segments using paragraph/section boundaries with variable size (100-2000 tokens per chunk)
+- **FR-014a**: System MUST use tokenizer compatible with Gemini embedding model for chunk size calculation
 - **FR-015**: System MUST generate embeddings for text chunks using Google Gemini embedding model (text-embedding-004 or latest)
+- **FR-015a**: System MUST authenticate to Google Gemini Embedding API using API key stored in secure environment variables
+- **FR-015b**: System MUST generate embeddings with dimension size of 768 (text-embedding-004 output)
+- **FR-015c**: System MUST batch embedding requests (max 100 chunks per batch) to optimize API usage
 - **FR-016**: System MUST store embeddings and text chunks in a Supabase self-hosted vector database
+- **FR-016a**: System MUST connect to Supabase using connection string with host, port, database name, and SSL enabled
+- **FR-016b**: System MUST authenticate to Supabase using service role key stored in secure environment variables
+- **FR-016c**: System MUST use pgvector extension for vector storage and operations
+- **FR-016d**: System MUST define schema with tables: users, documents, chunks, embeddings with user_id foreign keys for data isolation
+- **FR-016e**: System MUST create HNSW index on embedding vectors for efficient similarity search
 - **FR-017**: System MUST perform vector similarity search to retrieve relevant context for user queries
+- **FR-017a**: System MUST use cosine similarity algorithm for vector search
+- **FR-017b**: System MUST retrieve top-5 most similar chunks with minimum similarity threshold of 0.7
+- **FR-017c**: System MUST format retrieved chunks into context string (max 8000 tokens) for LLM input
 - **FR-018**: System MUST store all conversation history (user messages and AI responses) in the user's knowledge base
 - **FR-019**: System MUST support knowledge base reset functionality, permanently deleting all user data upon confirmation
 
@@ -193,6 +222,10 @@ A user can reset their entire knowledge base, clearing all uploaded files, crawl
 #### Voice Processing
 
 - **FR-025**: System MUST transcribe voice messages to text using Google Cloud Speech-to-Text API
+- **FR-025a**: System MUST authenticate to Google Cloud Speech-to-Text API using API key stored in secure environment variables
+- **FR-025b**: System MUST support audio formats: OGG (Opus codec from WhatsApp), MP3, WAV
+- **FR-025c**: System MUST support transcription languages: English (en-US), Spanish (es-ES), French (fr-FR), German (de-DE)
+- **FR-025d**: System MUST handle audio files up to 60 seconds duration
 - **FR-026**: System MUST process transcribed text through the AI engine and knowledge base
 - **FR-027**: System MUST store transcribed voice messages in conversation history
 
@@ -201,13 +234,21 @@ A user can reset their entire knowledge base, clearing all uploaded files, crawl
 - **FR-028**: System MUST persist all user knowledge bases across system restarts
 - **FR-029**: System MUST implement data isolation ensuring users cannot access other users' knowledge bases
 - **FR-030**: System MUST log all user interactions for debugging and analytics
+- **FR-030a**: System MUST use structured JSON logging with fields: timestamp (ISO 8601), user_id, event_type, message, metadata
+- **FR-030b**: System MUST log at appropriate levels: ERROR for failures, WARN for retries, INFO for user actions, DEBUG for internal operations
 - **FR-031**: System MUST implement error handling and retry logic for external API failures (Gemini, Evolution API, Supabase)
+- **FR-031a**: System MUST retry failed API calls with exponential backoff (1s, 2s, 4s, 8s, 16s) up to 5 attempts
+- **FR-031b**: System MUST set timeout of 30 seconds for Gemini API calls, 10 seconds for Evolution API, 5 seconds for Supabase queries
+- **FR-031c**: System MUST notify users with specific error messages when API failures exceed retry limit
 
 #### Security & Authentication
 
 - **FR-032**: System MUST authenticate users solely by their WhatsApp phone number as validated by the Evolution API
 - **FR-033**: System MUST trust the Evolution API's sender identity validation without additional authentication layers
 - **FR-034**: System MUST ensure each user's knowledge base is accessible only via their authenticated WhatsApp phone number
+- **FR-035**: System MUST store all API keys and credentials in environment variables, never in source code
+- **FR-036**: System MUST use HTTPS/TLS for all external API communications
+- **FR-037**: System MUST implement Supabase Row Level Security (RLS) policies to enforce user data isolation at database level
 
 ### Key Entities
 
