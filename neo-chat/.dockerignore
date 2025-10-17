@@ -1,0 +1,81 @@
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables (use docker-compose env instead)
+.env
+.env.*
+!.env.example
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+tests/
+*.test
+
+# Documentation
+README.md
+docs/
+*.md
+!requirements.txt
+
+# Logs
+*.log
+logs/
+
+# Database (use volumes instead)
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# Temporary files
+*.tmp
+*.bak
+.cache/
+temp/
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile*
+.dockerignore
+
+# Scripts (not needed in container)
+scripts/
+
+# Specs and planning
+specs/
+.specify/

@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  neo-chat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: neo-chat-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Google Cloud Services
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      
+      # Evolution API (WhatsApp)
+      - EVOLUTION_API_URL=${EVOLUTION_API_URL}
+      - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
+      - EVOLUTION_INSTANCE_NAME=${EVOLUTION_INSTANCE_NAME}
+      - EVOLUTION_TIMEOUT=${EVOLUTION_TIMEOUT:-10}
+      
+      # Supabase (PostgreSQL + pgvector)
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      
+      # Application Settings
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      
+      # Chunking Configuration
+      - MIN_CHUNK_TOKENS=${MIN_CHUNK_TOKENS:-100}
+      - MAX_CHUNK_TOKENS=${MAX_CHUNK_TOKENS:-500}
+      - CHUNK_OVERLAP_TOKENS=${CHUNK_OVERLAP_TOKENS:-50}
+      
+      # Rate Limiting
+      - GEMINI_RATE_LIMIT=${GEMINI_RATE_LIMIT:-60}
+      - WHATSAPP_RATE_LIMIT=${WHATSAPP_RATE_LIMIT:-60}
+      
+      # Timeouts
+      - GEMINI_TIMEOUT=${GEMINI_TIMEOUT:-30}
+      - SUPABASE_TIMEOUT=${SUPABASE_TIMEOUT:-5}
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    networks:
+      - neo-chat-network
+    
+    labels:
+      - "coolify.managed=true"
+      - "coolify.domain=neochat.neoo.com.sa"
+      - "coolify.https=true"
+
+networks:
+  neo-chat-network:
+    driver: bridge
