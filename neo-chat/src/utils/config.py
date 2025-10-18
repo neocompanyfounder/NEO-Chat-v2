@@ -20,11 +20,9 @@ class Settings(BaseSettings):
     GEMINI_EMBEDDING_MODEL: str = "text-embedding-004"
     GEMINI_TIMEOUT: int = 30
 
-    # Supabase
-    SUPABASE_URL: str
-    SUPABASE_SERVICE_ROLE_KEY: str
-    SUPABASE_ANON_KEY: str
-    SUPABASE_TIMEOUT: int = 5
+    # PostgreSQL Database with pgvector
+    DATABASE_URL: str
+    DATABASE_TIMEOUT: int = 5
 
     # Application
     APP_ENV: str = "development"

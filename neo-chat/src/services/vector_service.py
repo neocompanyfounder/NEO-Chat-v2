@@ -1,7 +1,7 @@
-"""Vector service for Supabase vector operations (T034)."""
+"""Vector service for PostgreSQL with pgvector operations (T034)."""
 
 from typing import List, Dict, Any, Optional
-from src.db.supabase_client import get_supabase_client
+from src.db import get_db_client
 from src.utils.config import Settings
 from src.utils.logger import get_logger
 from src.utils.retry import with_retry
@@ -10,16 +10,16 @@ logger = get_logger(__name__)
 
 
 class VectorService:
-    """Service for vector similarity search and storage in Supabase."""
+    """Service for vector similarity search and storage using PostgreSQL with pgvector."""
 
     def __init__(self, settings: Settings):
-        """Initialize vector service with Supabase configuration.
+        """Initialize vector service with PostgreSQL configuration.
         
         Args:
-            settings: Application settings containing Supabase credentials
+            settings: Application settings containing database credentials
         """
         self.settings = settings
-        self.client = get_supabase_client(settings)
+        self.client = get_db_client(settings)
         self.similarity_threshold = settings.VECTOR_SIMILARITY_THRESHOLD
         self.top_k = settings.VECTOR_TOP_K
 
@@ -30,7 +30,7 @@ class VectorService:
         user_id: str,
         embedding: List[float]
     ) -> Dict[str, Any]:
-        """Store embedding vector in Supabase.
+        """Store embedding vector in PostgreSQL.
         
         Args:
             chunk_id: UUID of the chunk
@@ -53,21 +53,30 @@ class VectorService:
         )
         
         try:
-            result = self.client.table("embeddings").insert({
-                "chunk_id": chunk_id,
-                "user_id": user_id,
-                "embedding": embedding
-            }).execute()
+            query = """
+                INSERT INTO embeddings (chunk_id, user_id, embedding)
+                VALUES ($1, $2, $3)
+                RETURNING id, chunk_id, user_id, created_at
+            """
+            
+            result = await self.client.fetchrow(
+                query,
+                chunk_id,
+                user_id,
+                embedding
+            )
+            
+            embedding_record = dict(result) if result else {}
             
             logger.info(
                 "Embedding stored successfully",
                 extra={
                     "chunk_id": chunk_id,
-                    "embedding_id": result.data[0]["id"] if result.data else None
+                    "embedding_id": embedding_record.get("id")
                 }
             )
             
-            return result.data[0] if result.data else {}
+            return embedding_record
             
         except Exception as e:
             logger.error(
@@ -115,19 +124,34 @@ class VectorService:
         )
         
         try:
-            # Use Supabase RPC function for vector similarity search
-            # This assumes a PostgreSQL function exists for HNSW search
-            result = self.client.rpc(
-                "match_chunks",
-                {
-                    "query_embedding": query_embedding,
-                    "match_threshold": min_similarity,
-                    "match_count": k,
-                    "filter_user_id": user_id
-                }
-            ).execute()
+            # Use pgvector cosine similarity operator (<=>)
+            # Join with chunks table to get content
+            query = """
+                SELECT 
+                    c.id,
+                    c.content,
+                    c.document_id,
+                    c.chunk_index,
+                    c.token_count,
+                    e.embedding,
+                    1 - (e.embedding <=> $1::vector) AS similarity
+                FROM embeddings e
+                JOIN chunks c ON e.chunk_id = c.id
+                WHERE e.user_id = $2
+                  AND 1 - (e.embedding <=> $1::vector) >= $3
+                ORDER BY e.embedding <=> $1::vector
+                LIMIT $4
+            """
             
-            chunks = result.data if result.data else []
+            results = await self.client.fetch(
+                query,
+                query_embedding,
+                user_id,
+                min_similarity,
+                k
+            )
+            
+            chunks = [dict(row) for row in results]
             
             logger.info(
                 "Vector search completed",
@@ -175,11 +199,27 @@ class VectorService:
         )
         
         try:
-            result = self.client.table("embeddings").insert(
-                embeddings_data
-            ).execute()
+            # Build batch insert query
+            query = """
+                INSERT INTO embeddings (chunk_id, user_id, embedding)
+                VALUES ($1, $2, $3)
+                RETURNING id, chunk_id, user_id, created_at
+            """
             
-            stored_count = len(result.data) if result.data else 0
+            stored_records = []
+            async with self.client.acquire() as conn:
+                async with conn.transaction():
+                    for data in embeddings_data:
+                        result = await conn.fetchrow(
+                            query,
+                            data["chunk_id"],
+                            data["user_id"],
+                            data["embedding"]
+                        )
+                        if result:
+                            stored_records.append(dict(result))
+            
+            stored_count = len(stored_records)
             
             logger.info(
                 "Batch embeddings stored",
@@ -189,7 +229,7 @@ class VectorService:
                 }
             )
             
-            return result.data if result.data else []
+            return stored_records
             
         except Exception as e:
             logger.error(
@@ -225,11 +265,14 @@ class VectorService:
         )
         
         try:
-            result = self.client.table("embeddings").delete().eq(
-                "user_id", user_id
-            ).execute()
+            query = """
+                DELETE FROM embeddings
+                WHERE user_id = $1
+                RETURNING id
+            """
             
-            deleted_count = len(result.data) if result.data else 0
+            results = await self.client.fetch(query, user_id)
+            deleted_count = len(results)
             
             logger.info(
                 "User embeddings deleted",

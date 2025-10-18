@@ -23,8 +23,7 @@ crewai>=0.28.0
 crewai-tools>=0.2.0
 google-generativeai>=0.3.0
 
-# Database
-supabase>=2.3.0
+# Database (PostgreSQL with pgvector)
 asyncpg>=0.29.0
 psycopg2-binary>=2.9.9
 pgvector>=0.2.4

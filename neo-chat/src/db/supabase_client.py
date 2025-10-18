@@ -1,4 +1,4 @@
-"""Supabase database client with connection pooling."""
+"""PostgreSQL database client with pgvector support and connection pooling."""
 
 from typing import AsyncGenerator, Optional
 from contextlib import asynccontextmanager
@@ -9,22 +9,23 @@ from ..utils.config import settings
 from ..utils.logger import logger
 
 
-class SupabaseClient:
-    """Supabase PostgreSQL client with connection pooling via Supavisor.
+class DatabaseClient:
+    """PostgreSQL client with pgvector support and connection pooling.
     
     Uses asyncpg for async PostgreSQL connections with connection pooling.
-    Connects via Supavisor (port 6543) for better connection management.
+    Provides vector operations via the pgvector extension.
     """
     
     def __init__(self):
-        """Initialize Supabase client."""
+        """Initialize database client."""
         self._pool: Optional[Pool] = None
+        self._vector_registered: bool = False
         
     async def connect(self) -> None:
-        """Create connection pool.
+        """Create connection pool and register pgvector types.
         
-        Connects to Supabase via Supavisor pooler (port 6543) as specified in FR-016a.
-        Uses SSL for secure connections.
+        Creates asyncpg connection pool and registers pgvector extension
+        for vector operations.
         """
         if self._pool is not None:
             logger.warning("Connection pool already exists")
@@ -34,35 +35,59 @@ class SupabaseClient:
             # Parse connection string
             # Format: postgresql://user:password@host:port/database
             self._pool = await asyncpg.create_pool(
-                dsn=settings.SUPABASE_URL,
+                dsn=settings.DATABASE_URL,
                 min_size=5,
                 max_size=20,
-                command_timeout=settings.SUPABASE_TIMEOUT,
+                command_timeout=settings.DATABASE_TIMEOUT,
                 server_settings={
                     'application_name': 'neo-chat',
-                }
+                },
+                init=self._init_connection
             )
             
             logger.info(
-                "Connected to Supabase",
+                "Connected to PostgreSQL with pgvector",
                 extra={
                     "event_type": "database_connected",
                     "metadata": {
-                        "pool_size": f"5-20",
-                        "timeout": settings.SUPABASE_TIMEOUT
+                        "pool_size": "5-20",
+                        "timeout": settings.DATABASE_TIMEOUT,
+                        "pgvector_enabled": True
                     }
                 }
             )
             
         except Exception as e:
             logger.error(
-                f"Failed to connect to Supabase: {e}",
+                f"Failed to connect to database: {e}",
                 extra={
                     "event_type": "database_connection_failed",
                     "metadata": {"error": str(e)}
                 }
             )
             raise
+    
+    async def _init_connection(self, conn) -> None:
+        """Initialize connection with pgvector support.
+        
+        Registers pgvector types for the connection.
+        
+        Args:
+            conn: asyncpg connection
+        """
+        if not self._vector_registered:
+            try:
+                # Register pgvector types
+                from pgvector.asyncpg import register_vector
+                await register_vector(conn)
+                self._vector_registered = True
+                logger.debug("pgvector types registered")
+            except ImportError:
+                logger.warning(
+                    "pgvector package not installed, vector operations may not work correctly"
+                )
+            except Exception as e:
+                logger.warning(f"Failed to register pgvector types: {e}")
     
     async def disconnect(self) -> None:
         """Close connection pool."""
@@ -74,13 +99,13 @@ class SupabaseClient:
             self._pool = None
             
             logger.info(
-                "Disconnected from Supabase",
+                "Disconnected from database",
                 extra={"event_type": "database_disconnected"}
             )
             
         except Exception as e:
             logger.error(
-                f"Error disconnecting from Supabase: {e}",
+                f"Error disconnecting from database: {e}",
                 extra={
                     "event_type": "database_disconnection_error",
                     "metadata": {"error": str(e)}
@@ -95,7 +120,7 @@ class SupabaseClient:
             Database connection
             
         Example:
-            async with supabase_client.acquire() as conn:
+            async with db_client.acquire() as conn:
                 result = await conn.fetch("SELECT * FROM users")
         """
         if self._pool is None:
@@ -193,16 +218,33 @@ class SupabaseClient:
 
 
 # Global client instance
-supabase_client = SupabaseClient()
+db_client = DatabaseClient()
+
+# Legacy aliases for backward compatibility
+supabase_client = db_client
 
 
-def get_supabase_client(settings=None) -> SupabaseClient:
-    """Get the global Supabase client instance.
+def get_db_client(settings=None) -> DatabaseClient:
+    """Get the global database client instance.
     
     Args:
         settings: Optional settings (ignored, for compatibility)
     
     Returns:
-        SupabaseClient instance
+        DatabaseClient instance
     """
-    return supabase_client
+    return db_client
+
+
+def get_supabase_client(settings=None) -> DatabaseClient:
+    """Get the global database client instance.
+    
+    Legacy function name for backward compatibility.
+    
+    Args:
+        settings: Optional settings (ignored, for compatibility)
+    
+    Returns:
+        DatabaseClient instance
+    """
+    return db_client
