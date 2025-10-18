@@ -125,7 +125,7 @@ class UserRepository:
             extra={
                 "event_type": "user_created",
                 "user_id": str(row['id']),
-                "metadata": {"phone_number": phone_number, "name": name}
+                "metadata": {"phone_number": phone_number, "user_name": name}
             }
         )
         

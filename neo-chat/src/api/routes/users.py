@@ -50,7 +50,7 @@ async def register_user(user_data: UserCreate):
             "User registration request",
             extra={
                 "phone_number": normalized_phone,
-                "name": user_data.name
+                "user_name": user_data.name
             }
         )
         
