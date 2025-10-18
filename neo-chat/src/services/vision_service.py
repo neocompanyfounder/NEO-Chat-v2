@@ -42,7 +42,7 @@ class VisionService:
             logger.error(f"Failed to initialize Vision client: {str(e)}")
             self.client = None
     
-    @with_retry(max_attempts=3, backoff_base=1)
+    @with_retry(max_retries=3, base_delay=1)
     async def extract_text_from_image(
         self,
         image_content: bytes,

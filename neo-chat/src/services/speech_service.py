@@ -202,7 +202,7 @@ class SpeechService:
         
         return False, warning
     
-    @with_retry(max_attempts=3, backoff_base=1)
+    @with_retry(max_retries=3, base_delay=1)
     async def transcribe_audio(
         self,
         audio_content: bytes,
