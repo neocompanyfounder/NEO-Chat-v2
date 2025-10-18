@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  neo-chat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: neo-chat-app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env
+    volumes:
+      - ../src:/app/src
+      - ../logs:/app/logs
+    depends_on:
+      - supabase-db
+    networks:
+      - neo-chat-network
+    restart: unless-stopped
+
+  supabase-db:
+    image: supabase/postgres:15.1.0.117
+    container_name: neo-chat-supabase-db
+    ports:
+      - "5432:5432"
+      - "6543:6543"  # Supavisor pooler
+    environment:
+      POSTGRES_PASSWORD: ${SUPABASE_DB_PASSWORD:-your-super-secret-password}
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+    volumes:
+      - supabase-db-data:/var/lib/postgresql/data
+      - ../src/db/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - neo-chat-network
+    restart: unless-stopped
+
+networks:
+  neo-chat-network:
+    driver: bridge
+
+volumes:
+  supabase-db-data:
