@@ -1,0 +1,138 @@
+# ============================================
+# NEO Chat WhatsApp AI RAG Engine
+# Docker Ignore Configuration
+# ============================================
+
+# --------------------------------------------
+# Git and Version Control
+# --------------------------------------------
+.git/
+.gitignore
+.gitattributes
+
+# --------------------------------------------
+# Environment Variables (CRITICAL - NEVER INCLUDE)
+# --------------------------------------------
+.env
+.env.*
+*.env
+.env.local
+.env.production
+.env.staging
+.env.development
+
+# --------------------------------------------
+# Python
+# --------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# --------------------------------------------
+# Documentation and Specifications
+# --------------------------------------------
+specs/
+.specify/
+*.md
+!neo-chat/README.md
+docs/
+USER_STORY_*.md
+PROJECT_*.md
+SPECIFICATION_*.md
+ENV_CONFIGURATION_*.md
+
+# --------------------------------------------
+# Development Files
+# --------------------------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# --------------------------------------------
+# Testing
+# --------------------------------------------
+tests/
+test-results/
+test-reports/
+coverage/
+.coverage.*
+
+# --------------------------------------------
+# Logs and Temporary Files
+# --------------------------------------------
+logs/
+*.log
+tmp/
+temp/
+*.tmp
+*.temp
+
+# --------------------------------------------
+# Operating System
+# --------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --------------------------------------------
+# Docker
+# --------------------------------------------
+docker/
+docker-compose*.yml
+Dockerfile*
+!Dockerfile
+.dockerignore
+
+# --------------------------------------------
+# CI/CD
+# --------------------------------------------
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# --------------------------------------------
+# Node modules (if any)
+# --------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --------------------------------------------
+# Database files
+# --------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# --------------------------------------------
+# Media and Uploads
+# --------------------------------------------
+uploads/
+media/
+user_files/
