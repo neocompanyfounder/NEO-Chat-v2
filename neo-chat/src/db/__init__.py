@@ -3,9 +3,11 @@
 from .supabase_client import (
     db_client,
     get_db_client,
-    supabase_client,  # Legacy alias for backward compatibility
-    get_supabase_client,  # Legacy alias for backward compatibility
-    DatabaseClient
+    DatabaseClient,
+    # Legacy aliases for backward compatibility
+    supabase_client,
+    get_supabase_client,
+    SupabaseClient,
 )
 
 __all__ = [
@@ -15,4 +17,5 @@ __all__ = [
     # Legacy exports for backward compatibility
     "supabase_client",
     "get_supabase_client",
+    "SupabaseClient",
 ]

@@ -222,6 +222,7 @@ db_client = DatabaseClient()
 
 # Legacy aliases for backward compatibility
 supabase_client = db_client
+SupabaseClient = DatabaseClient  # Class alias for backward compatibility
 
 
 def get_db_client(settings=None) -> DatabaseClient:
