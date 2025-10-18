@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from ..db import supabase_client
 from ..utils.logger import logger
 from ..utils.config import settings
-from .routes import health, webhook
+from .routes import health, webhook, users
 from .middleware.logging import LoggingMiddleware
 from .middleware.error_handler import ErrorHandlerMiddleware
 
@@ -128,6 +128,7 @@ app.add_middleware(LoggingMiddleware)
 # Include routers
 app.include_router(health.router, tags=["Health"])
 app.include_router(webhook.router, tags=["Webhook"])
+app.include_router(users.router, tags=["Users"])
 
 # Root endpoint
 @app.get("/")

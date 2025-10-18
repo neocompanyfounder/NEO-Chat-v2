@@ -68,17 +68,17 @@ class UserRepository:
             return User(**dict(row))
         return None
     
-    async def get_by_phone(self, phone_number: str) -> Optional[User]:
+    async def get_by_phone(self, phone_number: str) -> Optional[dict]:
         """Get user by phone number.
         
         Args:
             phone_number: User's phone number in E.164 format
             
         Returns:
-            User if found, None otherwise
+            User dict if found, None otherwise
         """
         query = """
-            SELECT id, phone_number, created_at, updated_at
+            SELECT id, phone_number, name, created_at, updated_at
             FROM users
             WHERE phone_number = $1
         """
@@ -86,26 +86,50 @@ class UserRepository:
         row = await self.db.fetchrow(query, phone_number)
         
         if row:
-            return User(**dict(row))
+            return dict(row)
         return None
     
-    async def get_or_create(self, phone_number: str) -> User:
+    async def get_or_create(self, phone_number: str, name: Optional[str] = None) -> dict:
         """Get existing user or create new one.
         
         Args:
             phone_number: User's phone number in E.164 format
+            name: Optional user name
             
         Returns:
-            Existing or newly created user
+            Existing or newly created user as dict
         """
         # Try to get existing user
-        user = await self.get_by_phone(phone_number)
+        query_select = """
+            SELECT id, phone_number, name, created_at, updated_at
+            FROM users
+            WHERE phone_number = $1
+        """
         
-        if user:
-            return user
+        row = await self.db.fetchrow(query_select, phone_number)
+        
+        if row:
+            return dict(row)
         
         # Create new user
-        return await self.create(UserCreate(phone_number=phone_number))
+        query_insert = """
+            INSERT INTO users (phone_number, name)
+            VALUES ($1, $2)
+            RETURNING id, phone_number, name, created_at, updated_at
+        """
+        
+        row = await self.db.fetchrow(query_insert, phone_number, name)
+        
+        logger.info(
+            f"Created user: {phone_number}",
+            extra={
+                "event_type": "user_created",
+                "user_id": str(row['id']),
+                "metadata": {"phone_number": phone_number, "name": name}
+            }
+        )
+        
+        return dict(row)
     
     async def update(self, user_id: UUID, user_update: UserUpdate) -> Optional[User]:
         """Update user.
@@ -170,3 +194,24 @@ class UserRepository:
             )
         
         return deleted
+    
+    async def list_users(self, limit: int = 10, offset: int = 0) -> list:
+        """List all users with pagination.
+        
+        Args:
+            limit: Maximum number of users to return
+            offset: Number of users to skip
+            
+        Returns:
+            List of user dicts
+        """
+        query = """
+            SELECT id, phone_number, name, created_at, updated_at
+            FROM users
+            ORDER BY created_at DESC
+            LIMIT $1 OFFSET $2
+        """
+        
+        rows = await self.db.fetch(query, limit, offset)
+        
+        return [dict(row) for row in rows]
