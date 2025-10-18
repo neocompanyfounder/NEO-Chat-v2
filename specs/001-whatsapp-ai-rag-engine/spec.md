@@ -176,7 +176,7 @@ A user can reset their entire knowledge base, clearing all uploaded files, crawl
 - **FR-007**: System MUST use CrewAI framework for multi-agent orchestration and task automation
 - **FR-007a**: System MUST configure CrewAI agents with roles (retrieval agent, response agent, tool agent) and sequential collaboration pattern
 - **FR-007b**: System MUST provide CrewAI agents with tools for vector search, file processing, and web crawling
-- **FR-008**: System MUST integrate with Google Gemini Flash 2.5 model for LLM inference
+- **FR-008**: System MUST integrate with Google Gemini 2.0 Flash model (gemini-2.0-flash-exp) for LLM inference
 - **FR-008a**: System MUST authenticate to Google Gemini API using API key stored in secure environment variables
 - **FR-008b**: System MUST use Gemini API endpoint v1/models/gemini-2.0-flash-exp or latest stable version
 - **FR-008c**: System MUST configure Gemini with maximum context window of 32,768 tokens
@@ -192,7 +192,7 @@ A user can reset their entire knowledge base, clearing all uploaded files, crawl
 - **FR-013a**: System MUST use appropriate text extraction libraries (PyPDF2 for PDF, python-docx for DOCX, openpyxl for XLSX, python-pptx for PPTX)
 - **FR-013b**: System MUST use Google Cloud Vision API for OCR on images (JPG, PNG, WEBP)
 - **FR-013c**: System MUST reject files exceeding 16MB and notify users of the size limit
-- **FR-014**: System MUST chunk extracted text into semantically meaningful segments using paragraph/section boundaries with variable size (100-2000 tokens per chunk)
+- **FR-014**: System MUST chunk extracted text into semantically meaningful segments using paragraph/section boundaries with variable size (100-500 tokens per chunk, with 50-token overlap between chunks)
 - **FR-014a**: System MUST use tokenizer compatible with Gemini embedding model for chunk size calculation
 - **FR-015**: System MUST generate embeddings for text chunks using Google Gemini embedding model (text-embedding-004 or latest)
 - **FR-015a**: System MUST authenticate to Google Gemini Embedding API using API key stored in secure environment variables
@@ -217,7 +217,7 @@ A user can reset their entire knowledge base, clearing all uploaded files, crawl
 - **FR-021**: System MUST extract text content from crawled web pages
 - **FR-022**: System MUST process crawled content through the same RAG ingestion pipeline as uploaded files
 - **FR-023**: System MUST handle crawling errors gracefully and notify users of failures
-- **FR-024**: System MUST respect robots.txt and implement rate limiting to avoid overloading target websites
+- **FR-024**: System MUST respect robots.txt and implement rate limiting (maximum 1 request per second per domain) to avoid overloading target websites
 
 #### Voice Processing
 
@@ -279,7 +279,7 @@ A user can reset their entire knowledge base, clearing all uploaded files, crawl
 
 - **SC-001**: Users receive AI responses to text messages within 10 seconds under normal load (95th percentile)
 - **SC-002**: System successfully processes and stores uploaded files in knowledge base within 30 seconds for files up to 10MB
-- **SC-003**: AI responses demonstrate accurate retrieval from user's knowledge base with 90% relevance score on test queries
+- **SC-003**: AI responses demonstrate accurate retrieval from user's knowledge base with 90% relevance score on test queries (measured as: top-5 retrieved chunks have cosine similarity ≥0.7 to query embedding, and user validation confirms answer accuracy in 9/10 test cases)
 - **SC-004**: System handles at least 100 concurrent users without response time degradation beyond 15 seconds
 - **SC-005**: Voice message transcription accuracy achieves 85% word-level accuracy for clear audio in supported languages
 - **SC-006**: Web crawling completes for standard documentation sites (up to 100 pages) within 5 minutes

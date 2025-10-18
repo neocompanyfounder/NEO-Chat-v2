@@ -277,6 +277,7 @@ Phase 1 (Setup) → Phase 2 (Foundational) → Phase 3 (US1) → Phase 4 (US2) �
 
 - [X] T091 [US5] Create tests/e2e/test_menu_navigation.py for menu interactions
 - [X] T092 [US5] Test: Send "/menu" → Select option → Verify appropriate action
+- [X] T092a [US5] Validate WhatsApp message format constraints (List Message title ≤60 chars, description ≤1024 chars, button text ≤20 chars, Reply Buttons ≤3 buttons with text ≤20 chars each)
 
 ---
 
