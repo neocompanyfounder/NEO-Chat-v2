@@ -51,6 +51,15 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to connect to database: {e}")
         raise
     
+    # Run database migrations
+    try:
+        from ..db.run_migrations import run_migrations
+        logger.info("Running database migrations...")
+        await run_migrations()
+        logger.info("Database migrations completed")
+    except Exception as e:
+        logger.warning(f"Migration check failed (non-fatal): {e}")
+    
     # Initialize services
     whatsapp_service = WhatsAppService(settings)
     gemini_service = GeminiService(settings)
