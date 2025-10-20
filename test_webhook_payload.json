@@ -1,0 +1,16 @@
+{
+  "event": "messages.upsert",
+  "instance": "neo-chat",
+  "data": {
+    "key": {
+      "remoteJid": "1234567890@s.whatsapp.net",
+      "fromMe": false,
+      "id": "3EB0C7E7F8B5D2A1"
+    },
+    "messageTimestamp": 1729450000,
+    "message": {
+      "messageType": "conversation",
+      "conversation": "Hello, this is a test message!"
+    }
+  }
+}

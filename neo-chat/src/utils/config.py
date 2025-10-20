@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     # Google Cloud
     GOOGLE_API_KEY: str
-    GEMINI_MODEL: str = "gemini-2.0-flash-exp"
+    GEMINI_MODEL: str = "gemini-2.5-pro"
     GEMINI_EMBEDDING_MODEL: str = "text-embedding-004"
     GEMINI_TIMEOUT: int = 30
 

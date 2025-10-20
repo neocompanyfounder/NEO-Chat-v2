@@ -8,6 +8,7 @@ from collections import defaultdict
 from src.models.webhook_events import WebhookEvent
 from src.agents.crew_manager import CrewManager
 from src.db.repositories.user_repository import UserRepository
+from src.db.supabase_client import supabase_client
 from src.utils.phone_utils import normalize_phone_number
 from src.utils.logger import get_logger
 from src.utils.config import get_settings
@@ -164,10 +165,29 @@ async def evolution_webhook(
             "instance": event.get("instance")
         }
     )
+    logger.debug(
+        "Webhook payload",
+        extra={
+            "payload": event
+        }
+    )
     
     try:
         # Parse event type
-        event_type = event.get("event")
+        event_type = (
+            event.get("event")
+            or event.get("type")
+            or event.get("action")
+        )
+
+        # Fallback for message-upsert style events without explicit type field
+        if not event_type:
+            data_section = event.get("data") or {}
+            if data_section.get("message"):
+                event_type = "messages.upsert"
+            elif "messages" in event:
+                # Some Evolution builds wrap message payloads directly under `messages`
+                event_type = "messages.upsert"
         
         if event_type == "messages.upsert":
             # Extract message data
@@ -250,8 +270,7 @@ async def evolution_webhook(
                 return {"status": "ignored", "reason": "empty_message"}
             
             # Get or create user
-            settings = get_settings()
-            user_repo = UserRepository(settings)
+            user_repo = UserRepository(supabase_client)
             user = await user_repo.get_or_create(normalized_phone)
             
             logger.info(
@@ -287,9 +306,12 @@ async def evolution_webhook(
             }
         
         else:
-            logger.info(
+            logger.warning(
                 "Unhandled event type",
-                extra={"event_type": event_type}
+                extra={
+                    "event_type": event_type,
+                    "payload": event
+                }
             )
             return {"status": "ignored", "reason": f"unhandled_event_{event_type}"}
     
@@ -300,7 +322,8 @@ async def evolution_webhook(
                 "error": str(e),
                 "error_type": type(e).__name__,
                 "event": event
-            }
+            },
+            exc_info=True
         )
         raise HTTPException(
             status_code=500,
