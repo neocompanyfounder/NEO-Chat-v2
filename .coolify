@@ -1,0 +1,6 @@
+{
+  "buildCommand": "docker build -t neo-chat:latest -f Dockerfile .",
+  "startCommand": "docker run -d --name neo-chat-app -p 8000:8000 --env-file neo-chat/.env neo-chat:latest",
+  "port": 8000,
+  "healthCheckPath": "/health"
+}
